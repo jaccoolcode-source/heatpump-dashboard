@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Personal data — actual meter readings are private, not committed
+data/heatpump-history.json
+# but keep the example/template
+!data/heatpump-history.example.json
+
+# Local Claude Code settings (machine-specific permissions)
+.claude/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.*
+*.key
+*.pem

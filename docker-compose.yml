@@ -1,0 +1,18 @@
+services:
+  heatpump-dashboard:
+    build: .
+    container_name: heatpump-dashboard
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.heatpump-dashboard.rule=Host(`heatpump-dashboard.localhost`)"
+      - "traefik.http.routers.heatpump-dashboard.entrypoints=web"
+      - "traefik.http.services.heatpump-dashboard.loadbalancer.server.port=3000"
+
+networks:
+  traefik:
+    external: true

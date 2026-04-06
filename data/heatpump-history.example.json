@@ -1,0 +1,33 @@
+{
+  "description": "Historical heatpump meter readings - end of month totals from Monitor energii",
+  "readings": {
+    "2024-01": {
+      "date": "2024-01-31",
+      "avgTemp": 1,
+      "consumed": {
+        "heating": 1122.5,
+        "dhw": 98.1,
+        "total": 1220.6
+      },
+      "produced": {
+        "heating": null,
+        "dhw": null,
+        "total": null
+      }
+    },
+    "2024-02": {
+      "date": "2024-02-29",
+      "avgTemp": -1,
+      "consumed": {
+        "heating": 0,
+        "dhw": 0,
+        "total": 0
+      },
+      "produced": {
+        "heating": null,
+        "dhw": null,
+        "total": null
+      }
+    }
+  }
+}

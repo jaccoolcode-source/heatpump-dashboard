@@ -42,9 +42,14 @@ Built for a **Stiebel Eltron HMD 6 LWD** — readings entered manually from *Mon
 
 3. Or with Docker (requires Traefik network):
    ```bash
+   # Create the shared Traefik network once (if not already created)
+   docker network create traefik
+
    docker compose up -d
    # → http://heatpump-dashboard.localhost
    ```
+
+> **Data persistence:** `./data` is bind-mounted into the container. Editing `heatpump-history.json` on the host takes effect immediately on the next page reload — no container restart needed.
 
 ## Data format
 

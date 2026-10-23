@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pompa Ciepla Dashboard</title>
+  <title>Heat Pump Dashboard</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
@@ -14,12 +14,12 @@
     <div class="header-left">
       <span class="header-icon">🔥</span>
       <div>
-        <h1>Pompa Ciepla Dashboard</h1>
-        <p class="last-updated" id="lastUpdated">Ladowanie...</p>
+        <h1>Heat Pump Dashboard</h1>
+        <p class="last-updated" id="lastUpdated">Loading...</p>
       </div>
     </div>
     <div class="header-right">
-      <button class="btn btn-secondary" onclick="copyStats()">📋 Kopiuj statystyki</button>
+      <button class="btn btn-secondary" onclick="copyStats()">📋 Copy stats</button>
     </div>
   </header>
 
@@ -30,27 +30,27 @@
     <section class="kpi-grid">
       <div class="card kpi-card">
         <div class="kpi-icon">📅</div>
-        <div class="kpi-label">Biezacy rok</div>
+        <div class="kpi-label">Current year</div>
         <div class="kpi-value" id="kpiYear">—</div>
-        <div class="kpi-sub">kWh zuzycie</div>
+        <div class="kpi-sub">kWh consumption</div>
       </div>
       <div class="card kpi-card">
         <div class="kpi-icon">❄️</div>
-        <div class="kpi-label">Najzimniejszy miesiac</div>
+        <div class="kpi-label">Coldest month</div>
         <div class="kpi-value" id="kpiPeak">—</div>
         <div class="kpi-sub" id="kpiPeakDate">kWh</div>
       </div>
       <div class="card kpi-card">
         <div class="kpi-icon">📊</div>
-        <div class="kpi-label">COP calkowity</div>
+        <div class="kpi-label">Overall COP</div>
         <div class="kpi-value" id="kpiCop">—</div>
-        <div class="kpi-sub">wspolczynnik efektywnosci</div>
+        <div class="kpi-sub">efficiency coefficient</div>
       </div>
       <div class="card kpi-card">
         <div class="kpi-icon">⚡</div>
-        <div class="kpi-label">Suma calkowita</div>
+        <div class="kpi-label">Grand total</div>
         <div class="kpi-value" id="kpiTotal">—</div>
-        <div class="kpi-sub">kWh od instalacji</div>
+        <div class="kpi-sub">kWh since installation</div>
       </div>
     </section>
 
@@ -58,8 +58,8 @@
     <section class="card chart-card">
       <div class="chart-header">
         <div>
-          <h2>Miesieczne zuzycie energii</h2>
-          <p class="chart-subtitle">kWh pobrane miesiecznie – wszystkie lata</p>
+          <h2>Monthly energy consumption</h2>
+          <p class="chart-subtitle">kWh drawn per month – all years</p>
         </div>
         <div class="year-toggles">
           <label class="toggle">
@@ -85,8 +85,8 @@
     <section class="card chart-card">
       <div class="chart-header">
         <div>
-          <h2>Srednia temperatura zewnetrzna</h2>
-          <p class="chart-subtitle">Srednia miesieczna temperatura °C – wszystkie lata</p>
+          <h2>Average outdoor temperature</h2>
+          <p class="chart-subtitle">Monthly average temperature °C – all years</p>
         </div>
         <div class="year-toggles">
           <label class="toggle">
@@ -112,8 +112,8 @@
     <section class="card history-card">
       <div class="chart-header">
         <div>
-          <h2>Historia miesieczna</h2>
-          <p class="chart-subtitle">Zuzycie energii per miesiac</p>
+          <h2>Monthly history</h2>
+          <p class="chart-subtitle">Energy consumption per month</p>
         </div>
         <div class="year-tabs" id="yearTabs">
           <button class="year-tab" data-year="2026">2026</button>
@@ -124,20 +124,20 @@
       <table class="history-table">
         <thead>
           <tr>
-            <th>Miesiac</th>
-            <th>Temp. zewn.</th>
-            <th class="col-heat">Ogrzewanie</th>
-            <th class="col-dhw">C.W.U.</th>
-            <th>Razem</th>
+            <th>Month</th>
+            <th>Outdoor temp.</th>
+            <th class="col-heat">Heating</th>
+            <th class="col-dhw">DHW</th>
+            <th>Total</th>
             <th>COP</th>
           </tr>
         </thead>
         <tbody id="historyBody">
-          <tr><td colspan="6" class="no-data">Ladowanie...</td></tr>
+          <tr><td colspan="6" class="no-data">Loading...</td></tr>
         </tbody>
         <tfoot>
           <tr class="total-row">
-            <td>Suma roczna</td>
+            <td>Annual total</td>
             <td id="footAvgTemp">—</td>
             <td class="col-heat" id="footTotalHeat">—</td>
             <td class="col-dhw" id="footTotalDhw">—</td>
@@ -152,34 +152,34 @@
     <section class="card chart-card">
       <div class="chart-header">
         <div>
-          <h2>Sumy calkowite</h2>
-          <p class="chart-subtitle">Laczone zuzycie od poczatku eksploatacji</p>
+          <h2>All-time totals</h2>
+          <p class="chart-subtitle">Combined consumption since start of operation</p>
         </div>
       </div>
       <table class="totals-table">
         <thead>
           <tr>
-            <th>Kategoria</th>
-            <th>Zuzycie (kWh)</th>
-            <th>Cieplo (kWh)</th>
+            <th>Category</th>
+            <th>Consumption (kWh)</th>
+            <th>Heat output (kWh)</th>
             <th>COP</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td class="col-heat">Ogrzewanie</td>
+            <td class="col-heat">Heating</td>
             <td id="totHeatConsumed">—</td>
             <td id="totHeatProduced">—</td>
             <td id="totHeatCop">—</td>
           </tr>
           <tr>
-            <td class="col-dhw">C.W.U.</td>
+            <td class="col-dhw">DHW</td>
             <td id="totDhwConsumed">—</td>
             <td id="totDhwProduced">—</td>
             <td id="totDhwCop">—</td>
           </tr>
           <tr class="total-row">
-            <td>Razem</td>
+            <td>Total</td>
             <td id="totConsumed">—</td>
             <td id="totProduced">—</td>
             <td id="totCop">—</td>
@@ -198,7 +198,7 @@
     <div class="footer-content">
       <span>Stiebel Eltron HMD 6 LWD</span>
       <span class="footer-sep">·</span>
-      <span>Dane aktualizowane recznie</span>
+      <span>Data updated manually</span>
       <span class="footer-sep">·</span>
       <span>heatpump-dashboard.localhost</span>
     </div>

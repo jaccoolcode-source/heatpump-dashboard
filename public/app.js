@@ -1,9 +1,9 @@
 'use strict';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const MONTHS_SHORT = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paz','Lis','Gru'];
-const MONTHS_LONG  = ['Styczen','Luty','Marzec','Kwiecien','Maj','Czerwiec',
-                      'Lipiec','Sierpien','Wrzesien','Pazdziernik','Listopad','Grudzien'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_LONG  = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
 const YEARS        = ['2024','2025','2026'];
 const YR_COLORS    = ['#4a90e2','#4caf77','#e74c3c'];
 
@@ -28,7 +28,7 @@ async function loadData() {
     renderAll();
   } catch (err) {
     console.error('Load error:', err);
-    el('lastUpdated').textContent = '⚠️ Blad ladowania danych';
+    el('lastUpdated').textContent = '⚠️ Error loading data';
   }
 }
 
@@ -38,7 +38,7 @@ function renderAll() {
   renderTemperatureChart();
   renderHistoryTable();
   renderTotals();
-  el('lastUpdated').textContent = 'Zaktualizowano recznie · ' + new Date().toLocaleDateString('pl-PL');
+  el('lastUpdated').textContent = 'Updated manually · ' + new Date().toLocaleDateString('en-GB');
 }
 
 // ── KPI Cards ─────────────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ function setupCharts() {
         tooltip: {
           callbacks: {
             label: ctx => ctx.raw === null
-              ? ` ${ctx.dataset.label}: brak danych`
+              ? ` ${ctx.dataset.label}: no data`
               : ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)} kWh`
           }
         }
@@ -146,7 +146,7 @@ function setupCharts() {
         tooltip: {
           callbacks: {
             label: ctx => ctx.raw === null
-              ? ` ${ctx.dataset.label}: brak danych`
+              ? ` ${ctx.dataset.label}: no data`
               : ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)} °C`
           }
         }
@@ -320,7 +320,7 @@ function buildStatsMessage() {
     const dhw  = String((c.dhw||0).toFixed(0)).padStart(4,' ')+' kWh';
     const tot  = String(c.total.toFixed(0)).padStart(5,' ')+' kWh';
 
-    lines.push(`${monthLabel} ${temp}  ogrzewanie: ${heat}  CWU: ${dhw}  razem: ${tot}`);
+    lines.push(`${monthLabel} ${temp}  heating: ${heat}  DHW: ${dhw}  total: ${tot}`);
     sumHeat  += c.heating || 0;
     sumDhw   += c.dhw     || 0;
     sumTotal += c.total;
@@ -328,7 +328,7 @@ function buildStatsMessage() {
 
   if (sumTotal > 0) {
     lines.push('─────────────────────────────────────────');
-    lines.push(`Suma ${curYear}: ogrzewanie ${sumHeat.toFixed(0)} kWh  CWU ${sumDhw.toFixed(0)} kWh  razem ${sumTotal.toFixed(0)} kWh`);
+    lines.push(`Total ${curYear}: heating ${sumHeat.toFixed(0)} kWh  DHW ${sumDhw.toFixed(0)} kWh  total ${sumTotal.toFixed(0)} kWh`);
   }
 
   // All-time totals
@@ -336,18 +336,18 @@ function buildStatsMessage() {
   for (const r of Object.values(readings)) allTotal += r?.consumed?.total || 0;
   if (allTotal > 0) {
     lines.push('');
-    lines.push(`⚡ Lacznie od instalacji: ${allTotal.toFixed(0)} kWh`);
+    lines.push(`⚡ Total since installation: ${allTotal.toFixed(0)} kWh`);
   }
 
   return lines.join('\n');
 }
 
 function copyStats() {
-  if (!heatpumpData) { showToast('❌ Brak danych'); return; }
+  if (!heatpumpData) { showToast('❌ No data'); return; }
   const msg = buildStatsMessage();
   navigator.clipboard.writeText(msg)
-    .then(() => showToast('📋 Skopiowano do schowka!'))
-    .catch(() => showToast('❌ Brak dostepu do schowka'));
+    .then(() => showToast('📋 Copied to clipboard!'))
+    .catch(() => showToast('❌ Clipboard access denied'));
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────

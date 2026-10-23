@@ -5,6 +5,8 @@ services:
     volumes:
       - ./data:/app/data
     restart: unless-stopped
+    ports:
+      - "8081:3000"
     networks:
       - traefik
     labels:

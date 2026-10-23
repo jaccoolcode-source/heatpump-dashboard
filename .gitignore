@@ -3,6 +3,9 @@ node_modules/
 
 # Personal data — actual meter readings are private, not committed
 data/heatpump-history.json
+data/heatpump-history.json.bak
+data/*.tmp
+data/collector-status.json
 # but keep the example/template
 !data/heatpump-history.example.json
 

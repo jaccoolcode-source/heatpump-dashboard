@@ -4,6 +4,8 @@ services:
     container_name: heatpump-dashboard
     volumes:
       - ./data:/app/data
+    environment:
+      - COLLECTOR_URL=http://heatpump-collector:3001
     restart: unless-stopped
     ports:
       - "8081:3000"
@@ -14,6 +16,22 @@ services:
       - "traefik.http.routers.heatpump-dashboard.rule=Host(`heatpump-dashboard.localhost`)"
       - "traefik.http.routers.heatpump-dashboard.entrypoints=web"
       - "traefik.http.services.heatpump-dashboard.loadbalancer.server.port=3000"
+
+  # Reads the heat pump controller (Luxtronik remote display) after startup and daily at 10:15
+  heatpump-collector:
+    build: .
+    container_name: heatpump-collector
+    command: ["node", "collector/index.js"]
+    volumes:
+      - ./data:/app/data
+    env_file: .env
+    environment:
+      - TZ=Europe/Warsaw
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=false"
 
 networks:
   traefik:

@@ -19,6 +19,7 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="btn btn-secondary" id="refreshBtn" onclick="refreshNow()">🔄 Refresh now</button>
       <button class="btn btn-secondary" onclick="copyStats()">📋 Copy stats</button>
     </div>
   </header>
@@ -61,20 +62,7 @@
           <h2>Monthly energy consumption</h2>
           <p class="chart-subtitle">kWh drawn per month – all years</p>
         </div>
-        <div class="year-toggles">
-          <label class="toggle">
-            <input type="checkbox" id="toggle2024" checked onchange="toggleConsumptionYear(0)" />
-            <span class="badge badge-2024">2024</span>
-          </label>
-          <label class="toggle">
-            <input type="checkbox" id="toggle2025" checked onchange="toggleConsumptionYear(1)" />
-            <span class="badge badge-2025">2025</span>
-          </label>
-          <label class="toggle">
-            <input type="checkbox" id="toggle2026" checked onchange="toggleConsumptionYear(2)" />
-            <span class="badge badge-2026">2026</span>
-          </label>
-        </div>
+        <div class="year-toggles" id="consumptionToggles"></div>
       </div>
       <div class="chart-wrap">
         <canvas id="consumptionChart"></canvas>
@@ -88,20 +76,7 @@
           <h2>Average outdoor temperature</h2>
           <p class="chart-subtitle">Monthly average temperature °C – all years</p>
         </div>
-        <div class="year-toggles">
-          <label class="toggle">
-            <input type="checkbox" id="toggleTemp2024" checked onchange="toggleTempYear(0)" />
-            <span class="badge badge-2024">2024</span>
-          </label>
-          <label class="toggle">
-            <input type="checkbox" id="toggleTemp2025" checked onchange="toggleTempYear(1)" />
-            <span class="badge badge-2025">2025</span>
-          </label>
-          <label class="toggle">
-            <input type="checkbox" id="toggleTemp2026" checked onchange="toggleTempYear(2)" />
-            <span class="badge badge-2026">2026</span>
-          </label>
-        </div>
+        <div class="year-toggles" id="tempToggles"></div>
       </div>
       <div class="chart-wrap chart-wrap-sm">
         <canvas id="temperatureChart"></canvas>
@@ -115,11 +90,7 @@
           <h2>Monthly history</h2>
           <p class="chart-subtitle">Energy consumption per month</p>
         </div>
-        <div class="year-tabs" id="yearTabs">
-          <button class="year-tab" data-year="2026">2026</button>
-          <button class="year-tab active" data-year="2025">2025</button>
-          <button class="year-tab" data-year="2024">2024</button>
-        </div>
+        <div class="year-tabs" id="yearTabs"></div>
       </div>
       <table class="history-table">
         <thead>

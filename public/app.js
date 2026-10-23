@@ -4,20 +4,24 @@
 const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTHS_LONG  = ['January','February','March','April','May','June',
                       'July','August','September','October','November','December'];
-const YEARS        = ['2024','2025','2026'];
-const YR_COLORS    = ['#4a90e2','#4caf77','#e74c3c'];
+const YR_COLORS    = ['#4a90e2','#4caf77','#e74c3c','#f39c12','#9b59b6','#1abc9c','#e67e22','#ec407a'];
+const CHART_YEARS_SHOWN = 3;               // most recent years visible in the charts by default
+const AUTO_RELOAD_MS   = 30 * 60 * 1000;   // reload data while the page stays open
+const STATUS_POLL_MS   = 3000;             // while a refresh is running
+const REFRESH_TIMEOUT  = 5 * 60 * 1000;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let heatpumpData    = null;
 let consumptionChart = null;
 let temperatureChart = null;
 let selectedYear    = String(new Date().getFullYear());
+let years           = [];                  // years with readings plus the current year, oldest first
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   setupCharts();
-  setupYearTabs();
   await loadData();
+  setInterval(loadData, AUTO_RELOAD_MS);
 });
 
 // ── Data loading ──────────────────────────────────────────────────────────────
@@ -26,6 +30,7 @@ async function loadData() {
     const res = await fetch('/api/data');
     heatpumpData = await res.json();
     renderAll();
+    await loadStatus();
   } catch (err) {
     console.error('Load error:', err);
     el('lastUpdated').textContent = '⚠️ Error loading data';
@@ -33,12 +38,62 @@ async function loadData() {
 }
 
 function renderAll() {
+  updateYears();
   renderKpi();
   renderConsumptionChart();
   renderTemperatureChart();
   renderHistoryTable();
   renderTotals();
-  el('lastUpdated').textContent = 'Updated manually · ' + new Date().toLocaleDateString('en-GB');
+}
+
+// ── Collector status ──────────────────────────────────────────────────────────
+async function loadStatus() {
+  const res    = await fetch('/api/status');
+  const status = await res.json();
+  renderStatus(status);
+  return status;
+}
+
+function renderStatus(status) {
+  const fmt  = iso => new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const last = status.lastRun;
+  let text;
+  if (status.running) {
+    text = '⏳ Reading the heat pump controller…';
+  } else if (last && !last.ok && last.finishedAt) {
+    text = `⚠️ Controller read failed ${fmt(last.finishedAt)}: ${last.error}`;
+    if (status.lastSuccess) text += ` · last successful ${fmt(status.lastSuccess.finishedAt)}`;
+  } else if (status.lastSuccess) {
+    text = `Updated from the controller · ${fmt(status.lastSuccess.finishedAt)}`;
+  } else {
+    text = 'Updated manually';
+  }
+  el('lastUpdated').textContent = text;
+  el('refreshBtn').disabled = Boolean(status.running);
+}
+
+async function refreshNow() {
+  el('refreshBtn').disabled = true;
+  try {
+    const res  = await fetch('/api/refresh', { method: 'POST' });
+    const body = await res.json();
+    if (!body.started) {
+      el('lastUpdated').textContent = `⚠️ ${body.reason}`;
+      if (res.status !== 409) el('refreshBtn').disabled = false;
+      return;
+    }
+    const deadline = Date.now() + REFRESH_TIMEOUT;
+    let status;
+    do {
+      await new Promise(r => setTimeout(r, STATUS_POLL_MS));
+      status = await loadStatus();
+    } while (status.running && Date.now() < deadline);
+    await loadData();
+  } catch (err) {
+    console.error('Refresh error:', err);
+    el('lastUpdated').textContent = '⚠️ Refresh failed';
+    el('refreshBtn').disabled = false;
+  }
 }
 
 // ── KPI Cards ─────────────────────────────────────────────────────────────────
@@ -92,13 +147,7 @@ function setupCharts() {
     type: 'bar',
     data: {
       labels:   MONTHS_SHORT,
-      datasets: YEARS.map((yr, i) => ({
-        label:           yr,
-        data:            Array(12).fill(null),
-        backgroundColor: YR_COLORS[i],
-        borderRadius:    5,
-        borderSkipped:   false,
-      }))
+      datasets: []
     },
     options: {
       responsive:          true,
@@ -130,13 +179,7 @@ function setupCharts() {
     type: 'bar',
     data: {
       labels:   MONTHS_SHORT,
-      datasets: YEARS.map((yr, i) => ({
-        label:           yr,
-        data:            Array(12).fill(null),
-        backgroundColor: YR_COLORS[i],
-        borderRadius:    5,
-        borderSkipped:   false,
-      }))
+      datasets: []
     },
     options: {
       responsive:          true,
@@ -162,10 +205,51 @@ function setupCharts() {
   });
 }
 
+// ── Years ─────────────────────────────────────────────────────────────────────
+// Years come from the data (plus the current year), so a new year appears as soon as it has a reading.
+function updateYears() {
+  const found = new Set(Object.keys(heatpumpData?.readings || {}).map(k => k.slice(0, 4)));
+  found.add(String(new Date().getFullYear()));
+  const next = [...found].filter(y => /^\d{4}$/.test(y)).sort();
+  if (next.join() === years.join()) return;
+
+  years = next;
+  if (!years.includes(selectedYear)) selectedYear = years[years.length - 1];
+  const hiddenByDefault = i => i < years.length - CHART_YEARS_SHOWN;
+
+  for (const chart of [consumptionChart, temperatureChart]) {
+    chart.data.datasets = years.map((yr, i) => ({
+      label:           yr,
+      data:            Array(12).fill(null),
+      backgroundColor: yearColor(i),
+      borderRadius:    5,
+      borderSkipped:   false,
+      hidden:          hiddenByDefault(i),
+    }));
+  }
+
+  const toggles = onchange => years.map((yr, i) => `
+    <label class="toggle">
+      <input type="checkbox" ${hiddenByDefault(i) ? '' : 'checked'} onchange="${onchange}(${i})" />
+      <span class="badge" style="--c: ${yearColor(i)}">${yr}</span>
+    </label>`).join('');
+  el('consumptionToggles').innerHTML = toggles('toggleConsumptionYear');
+  el('tempToggles').innerHTML        = toggles('toggleTempYear');
+
+  el('yearTabs').innerHTML = [...years].reverse()
+    .map(yr => `<button class="year-tab${yr === selectedYear ? ' active' : ''}" data-year="${yr}">${yr}</button>`)
+    .join('');
+  setupYearTabs();
+}
+
+function yearColor(index) {
+  return YR_COLORS[index % YR_COLORS.length];
+}
+
 function renderConsumptionChart() {
   if (!consumptionChart || !heatpumpData) return;
   const readings = heatpumpData.readings || {};
-  YEARS.forEach((yr, i) => {
+  years.forEach((yr, i) => {
     consumptionChart.data.datasets[i].data = MONTHS_SHORT.map((_, mi) => {
       const key = `${yr}-${String(mi+1).padStart(2,'0')}`;
       return readings[key]?.consumed?.total ?? null;
@@ -177,7 +261,7 @@ function renderConsumptionChart() {
 function renderTemperatureChart() {
   if (!temperatureChart || !heatpumpData) return;
   const readings = heatpumpData.readings || {};
-  YEARS.forEach((yr, i) => {
+  years.forEach((yr, i) => {
     temperatureChart.data.datasets[i].data = MONTHS_SHORT.map((_, mi) => {
       const key = `${yr}-${String(mi+1).padStart(2,'0')}`;
       return readings[key]?.avgTemp ?? null;
@@ -210,12 +294,6 @@ function setupYearTabs() {
       renderHistoryTable();
     });
   });
-
-  // Set active tab to current year if available
-  const curYear = String(new Date().getFullYear());
-  const tabs = document.querySelectorAll('#yearTabs .year-tab');
-  tabs.forEach(t => t.classList.toggle('active', t.dataset.year === curYear));
-  selectedYear = curYear;
 }
 
 function renderHistoryTable() {

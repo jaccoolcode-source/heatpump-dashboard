@@ -159,10 +159,28 @@ function toFields(list) {
     } else if (text && g.gapBefore >= SPACE_GAP) {
       text += ' ';
     }
-    text += known[g.key] ?? '?';
+    text += known[g.key] ?? splitDigits(g.key, known) ?? '?';
   }
   if (text) fields.push(text);
   return fields;
+}
+
+// Digits drawn touching each other ("61" in a selected row) form one unknown glyph.
+// Splits it at column boundaries into known digit glyphs; letters are never split this way.
+const NUMBER_CHARS = new Set('0123456789.-');
+const COL_CHARS    = 3;   // hex characters per column in a glyph key
+
+function splitDigits(key, known) {
+  if (!key) return '';
+  for (let cut = COL_CHARS; cut < key.length; cut += COL_CHARS) {
+    const head = known[key.slice(0, cut)];
+    if (head && NUMBER_CHARS.has(head)) {
+      const rest = splitDigits(key.slice(cut), known);
+      if (rest !== null) return head + rest;
+    }
+  }
+  const whole = known[key];
+  return whole && NUMBER_CHARS.has(whole) ? whole : null;
 }
 
 // "123.4 kWh" -> 123.4, "-5 °C" -> -5; anything else (e.g. an unknown glyph "12.?") -> null

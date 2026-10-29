@@ -25,3 +25,7 @@ Thumbs.db
 .env.*
 *.key
 *.pem
+
+# Playwright output
+test-results/
+playwright-report/

@@ -61,6 +61,18 @@ Built for a **Stiebel Eltron HMD 6 LWD** with a Luxtronik 2.x controller. Readin
 
 > **Data persistence:** `./data` is bind-mounted into the container. Editing `heatpump-history.json` on the host takes effect immediately on the next page reload — no container restart needed.
 
+## End-to-end tests
+
+Playwright tests in `e2e/` check the deployed dashboard after a redeploy: the API endpoints, page rendering without errors, Chart.js loading (including its SRI hash), both charts, KPI cards, year toggles and tabs, and the mobile layout. They run in desktop and mobile Chrome.
+
+```bash
+npx playwright install chromium   # once
+npm run test:e2e                  # against http://localhost:8081
+BASE_URL=http://heatpump-dashboard.localhost npm run test:e2e
+```
+
+The tests use the real data but only check structure, not values. They never start a controller read: `/api/refresh` is always mocked. On failure, screenshots and traces are saved in `test-results/` (`npx playwright show-report` opens the report).
+
 ## Collector
 
 The controller shows monthly history and the current month only on its display, which you can view and operate in the browser under *Sieć lokalna*. The collector logs in to the controller and operates that remote display like a person would. It reads the screen text with a bitmap font table, `collector/glyphs.json`.
